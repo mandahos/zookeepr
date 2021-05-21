@@ -3,13 +3,15 @@ const path = require('path');
 const express = require('express');
 const { animals } = require('./data/animals');
 
-const PORT = process.env.PORT || 3004;
+const PORT = process.env.PORT || 3008;
 const app = express();
 
 // parse incoming string or array data
 app.use(express.urlencoded({ extended: true }));
 // parse incoming JSON data
 app.use(express.json());
+//merges the paths of all public folders to include styling features
+app.use(express.static('public'));
 
 function filterByQuery(query, animalsArray) {
     let personalityTraitsArray = [];
@@ -56,14 +58,14 @@ function filterByQuery(query, animalsArray) {
   }
 
   function createNewAnimal(body, animalsArray) {
-    // console.log(body);
-    // our function's main code will go here!
     const animal = body;
     animalsArray.push(animal);
     fs.writeFileSync(
-      path.join(__dirname, '.data/animals.json'),
+      path.join(__dirname, './data/animals.json'),
       JSON.stringify({ animals: animalsArray }, null, 2)
     );
+    return animal;
+    
     // return finished code to post route for response
     return animal;
   }
@@ -83,7 +85,8 @@ function filterByQuery(query, animalsArray) {
     }
     return true;
   }
-
+  
+  
   app.get('/api/animals', (req, res) => {
     let results = animals;
     if (req.query) {
@@ -114,6 +117,20 @@ function filterByQuery(query, animalsArray) {
      res.json(animal);
     }
   });
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, './public/index.html'));
+});
+app.get('/animals', (req, res) => {
+  res.sendFile(path.join(__dirname, './public/animals.html'));
+});
+app.get('./zookeepers', (req, res) => {
+  res.sendFile(path.join(__dirname, './public/zookeepers.html'));
+});
+//wildcard route, catches requests to pages that do not exist on a webpage. 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, './public/index.html'));
+});
 
 app.listen(PORT, () => {
     console.log(`API server now on port ${PORT}!`);
